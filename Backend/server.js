@@ -61,9 +61,52 @@ let info = new Reserv({
     yourmessage:req.body.yourmesssage
   })
   info = await info.save()
-console.log(info)
-res.send('lets go')
-})
+  sendConfirmationEmail(savedInfo);
+
+  const savedInfo = await info.save();
+
+  // Send confirmation email
+  sendConfirmationEmail(savedInfo);
+
+  console.log(savedInfo);
+  res.send('Reservation and confirmation email sent successfully');
+} catch (error) {
+  console.error(error);
+  res.status(500).send('Internal Server Error');
+}
+});
+
+// Function to send confirmation email
+function sendConfirmationEmail(reservationDetails) {
+const transporter = nodemailer.createTransport({
+  // Setup your email transporter configuration (e.g., SMTP, Gmail, etc.)
+  // Example for using Gmail:
+  service: 'gmail',
+  auth: {
+    user: 'your-email@gmail.com',
+    pass: 'your-email-password',
+  },
+});
+
+const mailOptions = {
+  from: 'your-email@gmail.com',
+  to: reservationDetails.mail,
+  subject: 'Reservation Confirmation',
+  text: `Thank you for your reservation!\n\nDetails:\n${JSON.stringify(
+    reservationDetails,
+    null,
+    2
+  )}`,
+};
+
+transporter.sendMail(mailOptions, (error, info) => {
+  if (error) {
+    console.error('Error sending confirmation email:', error);
+  } else {
+    console.log('Confirmation email sent:', info.response);
+  }
+});
+}
 
 
 app.post('/signup' , userControler.signup)
